@@ -63,6 +63,7 @@ function page({ path, title, description, body, schema, noindex = false, standal
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  ${path === "/" ? '<meta name="google-site-verification" content="QILET_qkRv-MoJL8kK3jFdu5jzkD0q99iSSwdqRvFb0" />' : ""}
   <title>${escape(title)}</title>
   <meta name="description" content="${escape(description)}">
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${canonical}">`}
