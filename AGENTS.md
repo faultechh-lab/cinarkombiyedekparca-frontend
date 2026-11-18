@@ -11,6 +11,7 @@ Use a clear color break between the page title and the body on interior pages. S
 Keep the React administrator login available by direct URL only. Keep it out of public navigation and the sitemap.
 Show the custom React administrator page link in desktop and mobile navigation only after the server confirms a signed-in administrator. Send successful sign-ins to that page.
 Keep the sign-out action inside the administrator page. Do not show or edit stock quantities in the catalog manager. Let administrators enlarge category and product thumbnails from the lists.
+Allow products to be saved without a part code or category. List uncategorized products on the public catalog page.
 
 Render the public catalog and sitemap from the Django API. Keep category and product slugs stable across edits.
 

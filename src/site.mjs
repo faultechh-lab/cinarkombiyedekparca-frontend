@@ -230,13 +230,19 @@ export function renderHome(categories) {
 
 pages.set("/", renderHome(null));
 
-export function renderCatalog(categories) {
+export function renderCatalog(categories, uncategorized = []) {
   return page({
     path: catalogPath, title: "Kombi Yedek Parça Kataloğu | Çınar Ticaret İzmir",
     description: "Çınar Ticaret kombi yedek parça kataloğunda ürünleri kategorilerine göre inceleyin.",
     schema: breadcrumbSchema([["Yedek Parçalar", catalogPath]]),
     body: `${pageIntro([["Yedek Parçalar", catalogPath]], "Kombi Yedek Parça Kataloğu", "Parça türüne göre inceleyin. Uyumlu parçayı bulmak için kombinizin tam modelini ve varsa parçanın üzerindeki kodu bizimle paylaşın.")}
-    <div class="container subpage">${categoryCards(categories)}</div>`,
+    <div class="container subpage">
+      ${categories?.length || !uncategorized.length ? categoryCards(categories) : ""}
+      ${uncategorized.length ? `<section aria-labelledby="kategorisiz-baslik">
+        <h2 id="kategorisiz-baslik">Kategorisiz Ürünler</h2>
+        ${productList(uncategorized)}
+      </section>` : ""}
+    </div>`,
   });
 }
 
@@ -257,11 +263,14 @@ export function renderCategory(category, products) {
 }
 
 export function renderProduct(product) {
-  const category = { name: product.category_name, slug: product.category_slug };
-  const items = [["Yedek Parçalar", catalogPath], [category.name, categoryPath(category)], [product.name, productPath(product)]];
+  const items = [["Yedek Parçalar", catalogPath]];
+  if (product.category_slug) {
+    items.push([product.category_name, categoryPath({ slug: product.category_slug })]);
+  }
+  items.push([product.name, productPath(product)]);
   const description = product.description || `${product.name} için parça uyumluluğu hakkında Çınar Ticaret ile iletişime geçin.`;
   const image = imagePath(product.image);
-  const code = /^ORNEK-\d+$/.test(product.sku) ? "" : product.sku;
+  const code = product.sku && !/^ORNEK-\d+$/.test(product.sku) ? product.sku : "";
   return page({
     path: productPath(product), title: `${product.name} | Çınar Ticaret`, description,
     schema: {

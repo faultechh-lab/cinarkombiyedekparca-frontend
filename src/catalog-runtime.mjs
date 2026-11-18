@@ -53,9 +53,16 @@ export async function catalogResponse(request, backendOrigin, backendHeaders = {
       const [categories, products] = await Promise.all([read("categories"), read("products")]);
       return send(renderSitemap(categories, products), 200, xmlHeaders);
     }
-    if (path === "/" || path === catalogPath) {
+    if (path === "/") {
       const categories = await read("categories", { ordering: "created_at" });
-      return send(path === "/" ? renderHome(categories) : renderCatalog(categories));
+      return send(renderHome(categories));
+    }
+    if (path === catalogPath) {
+      const [categories, uncategorized] = await Promise.all([
+        read("categories", { ordering: "created_at" }),
+        read("products", { category: "uncategorized" }),
+      ]);
+      return send(renderCatalog(categories, uncategorized));
     }
 
     const [, section, slug] = match;

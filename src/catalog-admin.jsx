@@ -41,7 +41,7 @@ async function changeCatalog(path, method, payload, image) {
   let body;
   if (image) {
     body = new FormData();
-    for (const [key, value] of Object.entries(payload)) body.set(key, value);
+    for (const [key, value] of Object.entries(payload)) body.set(key, value ?? "");
     body.set("image", image);
   } else if (payload) {
     headers["Content-Type"] = "application/json";
@@ -79,12 +79,12 @@ function CatalogDialog({ action, group, categories, busy, error, onClose, onSave
             <input name="name" required maxLength={isProduct ? 200 : 100} defaultValue={record?.name ?? ""} autoFocus />
           </label>
           {isProduct && <>
-            <label>Ürün kodu (SKU)
-              <input name="sku" required maxLength={100} defaultValue={record?.sku ?? ""} />
+            <label>Parça kodu (isteğe bağlı)
+              <input name="sku" maxLength={100} defaultValue={record?.sku ?? ""} />
             </label>
             <label>Kategori
-              <select name="category" required defaultValue={record?.category ?? ""}>
-                <option value="">Kategori seçin</option>
+              <select name="category" defaultValue={record?.category ?? ""}>
+                <option value="">Kategorisiz</option>
                 {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
               </select>
             </label>
@@ -148,11 +148,11 @@ function CatalogTable({ records, isProduct, onAction, onPreview }) {
           <img src={record.image} alt="" width="48" height="48" loading="lazy" />
         </button>}
         <div><strong>{record.name}</strong>
-          {isProduct ? <span className="catalog-meta">{record.sku}</span>
+          {isProduct ? record.sku && <span className="catalog-meta">{record.sku}</span>
             : record.description && <span className="catalog-meta catalog-description">{record.description}</span>}
         </div>
       </div></td>
-      {isProduct ? <td>{record.category_name}</td> : <td>{record.product_count}</td>}
+      {isProduct ? <td>{record.category_name || "Kategorisiz"}</td> : <td>{record.product_count}</td>}
       <td><div className="catalog-row-actions">
         <button type="button" onClick={() => onAction("edit", record)} aria-label={`${record.name} düzenle`}>Düzenle</button>
         <button type="button" onClick={() => onAction("delete", record)} aria-label={`${record.name} sil`}>Sil</button>
@@ -225,8 +225,9 @@ export function CatalogAdmin({ user, signingOut, onSignOut, logoutError }) {
       if (!removing) {
         payload = { name: fields.get("name").trim(), description: fields.get("description").trim() };
         if (isProduct) {
-          payload.sku = fields.get("sku").trim();
-          payload.category = Number(fields.get("category"));
+          const category = fields.get("category");
+          payload.sku = fields.get("sku").trim() || null;
+          payload.category = category ? Number(category) : null;
         }
         const upload = fields.get("image");
         if (upload?.size) image = upload;
@@ -271,7 +272,7 @@ export function CatalogAdmin({ user, signingOut, onSignOut, logoutError }) {
       <section className="catalog-content" aria-labelledby="catalog-section-title">
         <div className="catalog-toolbar">
           <h2 id="catalog-section-title">{group.title}</h2>
-          <button className="button button-primary" type="button" disabled={!catalog || loading || (isProduct && !categories.length)} onClick={() => openAction("create")}>
+          <button className="button button-primary" type="button" disabled={!catalog || loading} onClick={() => openAction("create")}>
             {group.singular} Ekle
           </button>
         </div>
@@ -292,12 +293,7 @@ export function CatalogAdmin({ user, signingOut, onSignOut, logoutError }) {
             </label>}
           </div>
           {records.length ? <CatalogTable records={records} isProduct={isProduct} onAction={openAction} onPreview={setImagePreview} /> : <div className="catalog-state">
-            {isProduct && !categories.length
-              ? <><p>Ürün eklemek için önce bir kategori oluşturun.</p><button className="button button-outline" type="button" onClick={() => {
-                selectGroup("categories");
-                openAction("create");
-              }}>Kategori Ekle</button></>
-              : <p>{search || categoryFilter ? "Aramanıza uyan kayıt bulunamadı." : isProduct ? "Henüz ürün eklenmedi." : "Henüz kategori eklenmedi."}</p>}
+            <p>{search || categoryFilter ? "Aramanıza uyan kayıt bulunamadı." : isProduct ? "Henüz ürün eklenmedi." : "Henüz kategori eklenmedi."}</p>
           </div>}
         </>}
         {loading && <p className="catalog-state" role="status">Katalog yükleniyor…</p>}
