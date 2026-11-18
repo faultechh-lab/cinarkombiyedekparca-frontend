@@ -27,6 +27,10 @@ const reviews = [
 ];
 export const categoryPath = (category) => `${catalogPath}${encodeURIComponent(category.slug)}/`;
 export const productPath = (product) => `/urun/${encodeURIComponent(product.slug)}/`;
+export const noindexCatalogPaths = new Set([
+  categoryPath({ slug: "deneme-7691a616627d" }),
+  productPath({ slug: "deneme-9c68c6356754" }),
+]);
 const escape = (value) => String(value).replace(/[&<>"']/g, (symbol) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
 })[symbol]);
@@ -66,7 +70,7 @@ function page({ path, title, description, body, schema, noindex = false, standal
   ${path === "/" ? '<meta name="google-site-verification" content="QILET_qkRv-MoJL8kK3jFdu5jzkD0q99iSSwdqRvFb0" />' : ""}
   <title>${escape(title)}</title>
   <meta name="description" content="${escape(description)}">
-  ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${canonical}">`}
+  ${noindex || noindexCatalogPaths.has(path) ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${canonical}">`}
   <meta property="og:title" content="${escape(title)}">
   <meta property="og:description" content="${escape(description)}">
   <meta property="og:type" content="website">

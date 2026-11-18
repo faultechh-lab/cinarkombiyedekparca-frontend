@@ -1,6 +1,6 @@
 import { adminPath, loginApi, loginPath, logoutApi } from "./auth-client.mjs";
 import { origin } from "./catalog.mjs";
-import { catalogPath, categoryPath, pages, productPath, renderCatalog, renderCategory, renderHome, renderProduct } from "./site.mjs";
+import { catalogPath, categoryPath, noindexCatalogPaths, pages, productPath, renderCatalog, renderCategory, renderHome, renderProduct } from "./site.mjs";
 
 export function isBackendPath(pathname) {
   return pathname === loginApi || pathname === logoutApi
@@ -14,7 +14,8 @@ const xmlHeaders = { "Content-Type": "application/xml; charset=utf-8", "Cache-Co
 const routePattern = /^\/(yedek-parcalar|urun)\/([a-z0-9_-]+)\/?$/;
 
 export function renderSitemap(categories = [], products = []) {
-  const paths = [...staticPaths, ...categories.map(categoryPath), ...products.map(productPath)];
+  const paths = [...staticPaths, ...categories.map(categoryPath), ...products.map(productPath)]
+    .filter(path => !noindexCatalogPaths.has(path));
   const entries = paths.map(path => "  <url><loc>" + origin + path + "</loc></url>").join("\n");
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + entries + "\n</urlset>\n";
